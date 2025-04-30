@@ -1,3 +1,10 @@
+permissions: write-all # Equivalent to default permissions plus id-token: write
+env:
+  ESC_ACTION_OIDC_AUTH: true
+  ESC_ACTION_OIDC_ORGANIZATION: pulumi
+  ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
+  ESC_ACTION_ENVIRONMENT: imports/github-secrets
+  ESC_ACTION_EXPORT_ENVIRONMENT_VARIABLES: false
 name: Test tap-pulumi-cloud
 
 on:
@@ -25,6 +32,9 @@ jobs:
         - "3.13"
 
     steps:
+    - name: Fetch secrets from ESC
+      id: esc-secrets
+      uses: pulumi/esc-action@v1
     - name: Checkout code
       uses: actions/checkout@v4.1.7
       with:
@@ -56,8 +66,8 @@ jobs:
 
     - name: Run tests
       env:
-        TAP_PULUMI_CLOUD_TOKEN: ${{ secrets.TAP_PULUMI_CLOUD_TOKEN }}
-        TAP_PULUMI_CLOUD_ORGANIZATIONS: ${{ secrets.TAP_PULUMI_CLOUD_ORGANIZATIONS }}
-        TAP_PULUMI_CLOUD_START_DATE: ${{ secrets.TAP_PULUMI_CLOUD_START_DATE }}
+        TAP_PULUMI_CLOUD_TOKEN: ${{ steps.esc-secrets.outputs.TAP_PULUMI_CLOUD_TOKEN }}
+        TAP_PULUMI_CLOUD_ORGANIZATIONS: ${{ steps.esc-secrets.outputs.TAP_PULUMI_CLOUD_ORGANIZATIONS }}
+        TAP_PULUMI_CLOUD_START_DATE: ${{ steps.esc-secrets.outputs.TAP_PULUMI_CLOUD_START_DATE }}
       run: |
         nox

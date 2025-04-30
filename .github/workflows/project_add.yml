@@ -1,3 +1,10 @@
+permissions: write-all # Equivalent to default permissions plus id-token: write
+env:
+  ESC_ACTION_OIDC_AUTH: true
+  ESC_ACTION_OIDC_ORGANIZATION: pulumi
+  ESC_ACTION_OIDC_REQUESTED_TOKEN_TYPE: urn:pulumi:token-type:access_token:organization
+  ESC_ACTION_ENVIRONMENT: imports/github-secrets
+  ESC_ACTION_EXPORT_ENVIRONMENT_VARIABLES: false
 # Managed by Pulumi. Any edits to this file will be overwritten.
 
 name: Add issues and PRs to MeltanoLabs Overview Project
@@ -19,7 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.actor != 'dependabot[bot]' }}
     steps:
+      - name: Fetch secrets from ESC
+        id: esc-secrets
+        uses: pulumi/esc-action@v1
       - uses: actions/add-to-project@v1.0.2
         with:
           project-url: https://github.com/orgs/MeltanoLabs/projects/3
-          github-token: ${{ secrets.MELTYBOT_PROJECT_ADD_PAT }}
+          github-token: ${{ steps.esc-secrets.outputs.MELTYBOT_PROJECT_ADD_PAT }}
